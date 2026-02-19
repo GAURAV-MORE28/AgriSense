@@ -1,0 +1,931 @@
+# KRISHI-AI Government Schemes Database
+# Edit this file to add/modify scheme eligibility rules
+# Non-developers can update rules without code changes
+
+schemes:
+  # =====================================
+  # Scheme 1: PM-KISAN
+  # =====================================
+  - scheme_id: "PM-KISAN-001"
+    name: "PM-KISAN Samman Nidhi"
+    name_hi: "पीएम-किसान सम्मान निधि"
+    name_mr: "पीएम-किसान सन्मान निधी"
+    category: "income_support"
+    description: "Direct income support of ₹6,000 per year to small and marginal farmers"
+    max_benefit: 6000
+    benefit_type: "fixed"
+    priority_weight: 1.2
+    rules_logic: "AND"
+    rules:
+      - field: "acreage"
+        operator: "<="
+        value: 2
+        id: "pm_kisan_land_limit"
+        description: "Land holding must be 2 hectares or less"
+      - field: "farmer_type"
+        operator: "in"
+        value: ["owner", "tenant"]
+        id: "pm_kisan_farmer_type"
+        description: "Must be land owner or registered tenant"
+    required_documents:
+      - "Aadhaar Card"
+      - "Land Records"
+      - "Bank Passbook"
+
+  # =====================================
+  # Scheme 2: Soil Health Card
+  # =====================================
+  - scheme_id: "SHC-002"
+    name: "Soil Health Card Scheme"
+    name_hi: "मृदा स्वास्थ्य कार्ड योजना"
+    name_mr: "मृदा आरोग्य कार्ड योजना"
+    category: "agriculture_support"
+    description: "Free soil testing and recommendations for nutrient management"
+    max_benefit: 5000
+    benefit_type: "fixed"
+    priority_weight: 0.8
+    rules_logic: "AND"
+    rules:
+      - field: "farmer_type"
+        operator: "in"
+        value: ["owner", "tenant", "sharecropper"]
+        id: "shc_farmer_type"
+        description: "Any type of farmer is eligible"
+    required_documents:
+      - "Aadhaar Card"
+      - "Land Records"
+
+  # =====================================
+  # Scheme 3: PMFBY Crop Insurance
+  # =====================================
+  - scheme_id: "PMFBY-003"
+    name: "PM Fasal Bima Yojana"
+    name_hi: "प्रधानमंत्री फसल बीमा योजना"
+    name_mr: "प्रधानमंत्री पीक विमा योजना"
+    category: "insurance"
+    description: "Crop insurance scheme with low premium for farmers"
+    max_benefit: 200000
+    benefit_type: "per_hectare"
+    benefit_per_hectare: 40000
+    priority_weight: 1.5
+    rules_logic: "AND"
+    rules:
+      - field: "acreage"
+        operator: ">"
+        value: 0
+        id: "pmfby_has_land"
+        description: "Must have some cultivable land"
+      - field: "main_crops"
+        operator: "any_in"
+        value: ["rice", "wheat", "cotton", "sugarcane", "pulses", "oilseeds", "maize", "soybean"]
+        id: "pmfby_notified_crops"
+        description: "Must grow notified crops"
+    required_documents:
+      - "Aadhaar Card"
+      - "Land Records"
+      - "Bank Account Details"
+      - "Sowing Certificate"
+
+  # =====================================
+  # Scheme 4: KCC Kisan Credit Card
+  # =====================================
+  - scheme_id: "KCC-004"
+    name: "Kisan Credit Card"
+    name_hi: "किसान क्रेडिट कार्ड"
+    name_mr: "किसान क्रेडिट कार्ड"
+    category: "credit"
+    description: "Credit facility for farmers at subsidized interest rates"
+    max_benefit: 300000
+    benefit_type: "per_hectare"
+    benefit_per_hectare: 100000
+    priority_weight: 1.3
+    rules_logic: "AND"
+    rules:
+      - field: "farmer_type"
+        operator: "in"
+        value: ["owner", "tenant"]
+        id: "kcc_farmer_type"
+        description: "Must be owner or tenant farmer"
+      - field: "acreage"
+        operator: ">="
+        value: 0.5
+        id: "kcc_min_land"
+        description: "Minimum 0.5 hectare land required"
+    required_documents:
+      - "Aadhaar Card"
+      - "Land Records"
+      - "Bank Account"
+      - "Passport Photo"
+
+  # =====================================
+  # Scheme 5: Subsidy for Irrigation
+  # =====================================
+  - scheme_id: "PMKSY-005"
+    name: "PM Krishi Sinchai Yojana"
+    name_hi: "प्रधानमंत्री कृषि सिंचाई योजना"
+    name_mr: "प्रधानमंत्री कृषी सिंचन योजना"
+    category: "irrigation"
+    description: "Subsidy for micro-irrigation systems like drip and sprinkler"
+    max_benefit: 100000
+    benefit_type: "percentage"
+    benefit_percentage: 55
+    base_amount: 180000
+    priority_weight: 1.1
+    rules_logic: "AND"
+    rules:
+      - field: "land_type"
+        operator: "in"
+        value: ["dry", "mixed"]
+        id: "pmksy_land_type"
+        description: "Priority for dry or mixed land"
+      - field: "acreage"
+        operator: ">="
+        value: 0.5
+        id: "pmksy_min_land"
+        description: "Minimum 0.5 hectare required"
+    required_documents:
+      - "Aadhaar Card"
+      - "Land Records"
+      - "Quotation from Vendor"
+
+  # =====================================
+  # Scheme 6: National Food Security Mission
+  # =====================================
+  - scheme_id: "NFSM-006"
+    name: "National Food Security Mission"
+    name_hi: "राष्ट्रीय खाद्य सुरक्षा मिशन"
+    name_mr: "राष्ट्रीय अन्न सुरक्षा मिशन"
+    category: "production_support"
+    description: "Support for increasing production of rice, wheat, and pulses"
+    max_benefit: 50000
+    benefit_type: "per_hectare"
+    benefit_per_hectare: 25000
+    priority_weight: 1.0
+    rules_logic: "AND"
+    rules:
+      - field: "main_crops"
+        operator: "any_in"
+        value: ["rice", "wheat", "pulses", "coarse_cereals"]
+        id: "nfsm_crops"
+        description: "Must grow rice, wheat, or pulses"
+      - field: "acreage"
+        operator: ">="
+        value: 1
+        id: "nfsm_min_land"
+        description: "Minimum 1 hectare required"
+    required_documents:
+      - "Aadhaar Card"
+      - "Land Records"
+
+  # =====================================
+  # Scheme 7: Small Farmer Support
+  # =====================================
+  - scheme_id: "SFS-007"
+    name: "Small Farmer Agri-Business Consortium"
+    name_hi: "लघु कृषक कृषि व्यापार संघ"
+    name_mr: "लघु शेतकरी कृषी व्यवसाय संघ"
+    category: "agribusiness"
+    description: "Support for small farmers to link with markets"
+    max_benefit: 75000
+    benefit_type: "fixed"
+    priority_weight: 0.9
+    rules_logic: "AND"
+    rules:
+      - field: "acreage"
+        operator: "<="
+        value: 2
+        id: "sfs_small_farmer"
+        description: "Must be small farmer (≤2 hectares)"
+      - field: "annual_income"
+        operator: "<="
+        value: 200000
+        id: "sfs_income_limit"
+        description: "Annual income ≤ ₹2,00,000"
+    required_documents:
+      - "Aadhaar Card"
+      - "Land Records"
+      - "Income Certificate"
+
+  # =====================================
+  # Scheme 8: Organic Farming Support
+  # =====================================
+  - scheme_id: "PKVY-008"
+    name: "Paramparagat Krishi Vikas Yojana"
+    name_hi: "परंपरागत कृषि विकास योजना"
+    name_mr: "परंपरागत कृषी विकास योजना"
+    category: "organic_farming"
+    description: "Support for organic farming practices"
+    max_benefit: 50000
+    benefit_type: "per_hectare"
+    benefit_per_hectare: 50000
+    priority_weight: 1.0
+    rules_logic: "AND"
+    rules:
+      - field: "acreage"
+        operator: ">="
+        value: 0.5
+        id: "pkvy_min_land"
+        description: "Minimum 0.5 hectare required"
+      - field: "farmer_type"
+        operator: "=="
+        value: "owner"
+        id: "pkvy_owner"
+        description: "Must be land owner"
+    required_documents:
+      - "Aadhaar Card"
+      - "Land Records"
+      - "Group Formation Certificate"
+
+  # =====================================
+  # Scheme 9: Agricultural Machinery
+  # =====================================
+  - scheme_id: "SMAM-009"
+    name: "Sub-Mission on Agricultural Mechanization"
+    name_hi: "कृषि मशीनीकरण उप-मिशन"
+    name_mr: "कृषी यांत्रिकीकरण उप-मिशन"
+    category: "mechanization"
+    description: "Subsidy on farm machinery and equipment"
+    max_benefit: 150000
+    benefit_type: "percentage"
+    benefit_percentage: 50
+    base_amount: 300000
+    priority_weight: 1.2
+    rules_logic: "AND"
+    rules:
+      - field: "acreage"
+        operator: ">="
+        value: 2
+        id: "smam_min_land"
+        description: "Minimum 2 hectares for individual machinery"
+      - field: "farmer_type"
+        operator: "in"
+        value: ["owner", "tenant"]
+        id: "smam_farmer_type"
+        description: "Owner or long-term tenant"
+    required_documents:
+      - "Aadhaar Card"
+      - "Land Records"
+      - "Quotation for Machinery"
+
+  # =====================================
+  # Scheme 10: Horticulture Development
+  # =====================================
+  - scheme_id: "MIDH-010"
+    name: "Mission for Integrated Development of Horticulture"
+    name_hi: "समेकित बागवानी विकास मिशन"
+    name_mr: "एकात्मिक फलोत्पादन विकास मिशन"
+    category: "horticulture"
+    description: "Support for fruit and vegetable cultivation"
+    max_benefit: 80000
+    benefit_type: "per_hectare"
+    benefit_per_hectare: 40000
+    priority_weight: 1.1
+    rules_logic: "AND"
+    rules:
+      - field: "main_crops"
+        operator: "any_in"
+        value: ["vegetables", "fruits", "mango", "banana", "citrus", "grapes", "pomegranate"]
+        id: "midh_horticulture"
+        description: "Must grow horticultural crops"
+      - field: "land_type"
+        operator: "in"
+        value: ["irrigated", "mixed"]
+        id: "midh_water"
+        description: "Must have irrigation facility"
+    required_documents:
+      - "Aadhaar Card"
+      - "Land Records"
+      - "Water Source Certificate"
+
+  # =====================================
+  # Scheme 11: Dairy Entrepreneurship
+  # =====================================
+  - scheme_id: "DEDS-011"
+    name: "Dairy Entrepreneurship Development Scheme"
+    name_hi: "डेयरी उद्यमिता विकास योजना"
+    name_mr: "दुग्ध उद्योजकता विकास योजना"
+    category: "dairy"
+    description: "Subsidy for dairy units and cattle purchase"
+    max_benefit: 250000
+    benefit_type: "percentage"
+    benefit_percentage: 25
+    base_amount: 1000000
+    priority_weight: 1.0
+    rules_logic: "AND"
+    rules:
+      - field: "farmer_type"
+        operator: "in"
+        value: ["owner", "tenant"]
+        id: "deds_farmer"
+        description: "Must be farmer or rural entrepreneur"
+      - field: "family_count"
+        operator: ">="
+        value: 2
+        id: "deds_family"
+        description: "Family labor availability"
+    required_documents:
+      - "Aadhaar Card"
+      - "Project Report"
+      - "Quotation for Cattle"
+
+  # =====================================
+  # Scheme 12: Interest Subvention
+  # =====================================
+  - scheme_id: "ISS-012"
+    name: "Interest Subvention Scheme"
+    name_hi: "ब्याज अनुदान योजना"
+    name_mr: "व्याज अनुदान योजना"
+    category: "credit"
+    description: "2% interest subvention on short-term crop loans"
+    max_benefit: 6000
+    benefit_type: "fixed"
+    priority_weight: 1.4
+    rules_logic: "AND"
+    rules:
+      - field: "farmer_type"
+        operator: "in"
+        value: ["owner", "tenant"]
+        id: "iss_farmer"
+        description: "Any cultivator"
+      - field: "acreage"
+        operator: "<="
+        value: 5
+        id: "iss_land_limit"
+        description: "Land holding up to 5 hectares"
+    required_documents:
+      - "Aadhaar Card"
+      - "Land Records"
+      - "Existing Loan Details"
+
+  # =====================================
+  # Scheme 13: Warehouse Support
+  # =====================================
+  - scheme_id: "WDRA-013"
+    name: "Warehouse Development and Regulatory Authority"
+    name_hi: "भण्डारगृह विकास एवं विनियामक प्राधिकरण"
+    name_mr: "गोदाम विकास आणि नियामक प्राधिकरण"
+    category: "storage"
+    description: "Support for post-harvest storage facilities"
+    max_benefit: 500000
+    benefit_type: "percentage"
+    benefit_percentage: 33
+    base_amount: 1500000
+    priority_weight: 0.8
+    rules_logic: "AND"
+    rules:
+      - field: "acreage"
+        operator: ">="
+        value: 5
+        id: "wdra_min_land"
+        description: "Minimum 5 hectares or FPO member"
+      - field: "main_crops"
+        operator: "any_in"
+        value: ["wheat", "rice", "maize", "pulses", "oilseeds"]
+        id: "wdra_storable"
+        description: "Must grow storable crops"
+    required_documents:
+      - "Aadhaar Card"
+      - "Land Records"
+      - "Project Plan"
+
+  # =====================================
+  # Scheme 14: Rainfed Area Development
+  # =====================================
+  - scheme_id: "RAD-014"
+    name: "Rainfed Area Development"
+    name_hi: "वर्षा आधारित क्षेत्र विकास"
+    name_mr: "पावसावर अवलंबून क्षेत्र विकास"
+    category: "land_development"
+    description: "Support for farmers in rainfed areas"
+    max_benefit: 25000
+    benefit_type: "per_hectare"
+    benefit_per_hectare: 25000
+    priority_weight: 1.3
+    rules_logic: "AND"
+    rules:
+      - field: "land_type"
+        operator: "=="
+        value: "dry"
+        id: "rad_dry_land"
+        description: "Must be rainfed/dry land"
+      - field: "acreage"
+        operator: ">="
+        value: 0.5
+        id: "rad_min_land"
+        description: "Minimum 0.5 hectare"
+    required_documents:
+      - "Aadhaar Card"
+      - "Land Records"
+
+  # =====================================
+  # Scheme 15: National Livestock Mission
+  # =====================================
+  - scheme_id: "NLM-015"
+    name: "National Livestock Mission"
+    name_hi: "राष्ट्रीय पशुधन मिशन"
+    name_mr: "राष्ट्रीय पशुधन मिशन"
+    category: "livestock"
+    description: "Support for poultry, goatery, and piggery"
+    max_benefit: 100000
+    benefit_type: "percentage"
+    benefit_percentage: 50
+    base_amount: 200000
+    priority_weight: 0.9
+    rules_logic: "AND"
+    rules:
+      - field: "annual_income"
+        operator: "<="
+        value: 300000
+        id: "nlm_income"
+        description: "Income up to ₹3,00,000"
+      - field: "family_count"
+        operator: ">="
+        value: 2
+        id: "nlm_family"
+        description: "Family to manage livestock"
+    required_documents:
+      - "Aadhaar Card"
+      - "Income Certificate"
+      - "Project Report"
+
+  # =====================================
+  # Scheme 16: Maharashtra State Specific
+  # =====================================
+  - scheme_id: "MH-FARM-016"
+    name: "Maharashtra Farm Loan Waiver"
+    name_hi: "महाराष्ट्र कृषि ऋण माफी"
+    name_mr: "महाराष्ट्र शेती कर्ज माफी"
+    category: "debt_relief"
+    description: "Farm loan waiver for small farmers in Maharashtra"
+    max_benefit: 150000
+    benefit_type: "fixed"
+    priority_weight: 1.5
+    rules_logic: "AND"
+    rules:
+      - field: "state"
+        operator: "=="
+        value: "maharashtra"
+        id: "mh_state"
+        description: "Must be Maharashtra resident"
+      - field: "acreage"
+        operator: "<="
+        value: 5
+        id: "mh_land_limit"
+        description: "Land up to 5 hectares"
+      - field: "annual_income"
+        operator: "<="
+        value: 200000
+        id: "mh_income"
+        description: "Annual income ≤ ₹2,00,000"
+    required_documents:
+      - "Aadhaar Card"
+      - "Land Records (7/12)"
+      - "Bank Loan Statement"
+      - "Income Certificate"
+
+  # =====================================
+  # Scheme 17: Women Farmer Support
+  # =====================================
+  - scheme_id: "MKSP-017"
+    name: "Mahila Kisan Sashaktikaran Pariyojana"
+    name_hi: "महिला किसान सशक्तिकरण परियोजना"
+    name_mr: "महिला किसान सक्षमीकरण प्रकल्प"
+    category: "women_empowerment"
+    description: "Skill development and support for women farmers"
+    max_benefit: 35000
+    benefit_type: "fixed"
+    priority_weight: 1.2
+    rules_logic: "AND"
+    rules:
+      - field: "farmer_type"
+        operator: "in"
+        value: ["owner", "tenant", "sharecropper"]
+        id: "mksp_farmer"
+        description: "Any women farmer"
+      - field: "family_count"
+        operator: ">="
+        value: 1
+        id: "mksp_family"
+        description: "Has household"
+    required_documents:
+      - "Aadhaar Card"
+      - "Land Records"
+      - "SHG Membership (if any)"
+
+  # =====================================
+  # Scheme 18: Solar Pump Subsidy
+  # =====================================
+  - scheme_id: "KUSUM-018"
+    name: "PM-KUSUM Solar Pump"
+    name_hi: "पीएम-कुसुम सोलर पंप"
+    name_mr: "पीएम-कुसुम सोलर पंप"
+    category: "energy"
+    description: "Subsidy for solar water pumps"
+    max_benefit: 200000
+    benefit_type: "percentage"
+    benefit_percentage: 60
+    base_amount: 350000
+    priority_weight: 1.3
+    rules_logic: "AND"
+    rules:
+      - field: "farmer_type"
+        operator: "=="
+        value: "owner"
+        id: "kusum_owner"
+        description: "Must be land owner"
+      - field: "land_type"
+        operator: "in"
+        value: ["dry", "mixed"]
+        id: "kusum_land"
+        description: "Suitable for solar irrigation"
+      - field: "acreage"
+        operator: ">="
+        value: 1
+        id: "kusum_min_land"
+        description: "Minimum 1 hectare"
+    required_documents:
+      - "Aadhaar Card"
+      - "Land Records"
+      - "Electricity Connection (if any)"
+
+  # =====================================
+  # Scheme 19: Sugarcane Development
+  # =====================================
+  - scheme_id: "SDF-019"
+    name: "Sugarcane Development Fund"
+    name_hi: "गन्ना विकास निधि"
+    name_mr: "ऊस विकास निधी"
+    category: "crop_specific"
+    description: "Support for sugarcane cultivation and processing"
+    max_benefit: 100000
+    benefit_type: "per_hectare"
+    benefit_per_hectare: 50000
+    priority_weight: 1.1
+    rules_logic: "AND"
+    rules:
+      - field: "main_crops"
+        operator: "contains"
+        value: "sugarcane"
+        id: "sdf_crop"
+        description: "Must grow sugarcane"
+      - field: "acreage"
+        operator: ">="
+        value: 1
+        id: "sdf_min_land"
+        description: "Minimum 1 hectare of sugarcane"
+      - field: "land_type"
+        operator: "=="
+        value: "irrigated"
+        id: "sdf_irrigated"
+        description: "Must have irrigation"
+    required_documents:
+      - "Aadhaar Card"
+      - "Land Records"
+      - "Sugar Mill Registration"
+
+  # =====================================
+  # Scheme 20: Cotton Development
+  # =====================================
+  - scheme_id: "TMC-020"
+    name: "Technology Mission on Cotton"
+    name_hi: "कपास प्रौद्योगिकी मिशन"
+    name_mr: "कापूस तंत्रज्ञान मिशन"
+    category: "crop_specific"
+    description: "Support for cotton farmers with quality seeds and technology"
+    max_benefit: 40000
+    benefit_type: "per_hectare"
+    benefit_per_hectare: 20000
+    priority_weight: 1.0
+    rules_logic: "AND"
+    rules:
+      - field: "main_crops"
+        operator: "contains"
+        value: "cotton"
+        id: "tmc_crop"
+        description: "Must grow cotton"
+      - field: "acreage"
+        operator: ">="
+        value: 0.5
+        id: "tmc_min_land"
+        description: "Minimum 0.5 hectare"
+      - field: "state"
+        operator: "in"
+        value: ["maharashtra", "gujarat", "madhya pradesh", "telangana", "andhra pradesh", "karnataka", "rajasthan", "haryana", "punjab"]
+        id: "tmc_state"
+        description: "Cotton growing states"
+    required_documents:
+      - "Aadhaar Card"
+      - "Land Records"
+      - "Seed Purchase Receipt"
+
+  # =====================================
+  # Maharashtra State Schemes (44–53)
+  # =====================================
+
+  - scheme_id: "MH-MPSK-044"
+    name: "Mahatma Phule Shetkari Karjmukti Yojana"
+    name_hi: "महात्मा फुले शेतकरी कर्जमुक्ति योजना"
+    name_mr: "महात्मा फुले शेतकरी कर्जमुक्ति योजना"
+    category: "debt_relief"
+    description: "Farm loan waiver up to ₹2 lakh for small and marginal farmers in Maharashtra"
+    max_benefit: 200000
+    benefit_type: "fixed"
+    priority_weight: 1.3
+    rules_logic: "AND"
+    rules:
+      - field: "state"
+        operator: "equals"
+        value: "maharashtra"
+        id: "mpsk_state"
+        description: "Must be in Maharashtra"
+      - field: "acreage"
+        operator: "<="
+        value: 5
+        id: "mpsk_land"
+        description: "Maximum 5 hectare land"
+      - field: "loan_status"
+        operator: "in"
+        value: ["active", "defaulted"]
+        id: "mpsk_loan"
+        description: "Must have active or defaulted farm loan"
+    required_documents:
+      - "Aadhaar Card"
+      - "Bank Loan Statement"
+      - "7/12 Extract"
+      - "Bank Passbook"
+
+  - scheme_id: "MH-NDKS-045"
+    name: "Nanaji Deshmukh Krushi Sanjivani Yojana (PoCRA)"
+    name_hi: "नानाजी देशमुख कृषि संजीवनी योजना"
+    name_mr: "नानाजी देशमुख कृषी संजीवनी योजना (PoCRA)"
+    category: "climate_resilience"
+    description: "Climate-resilient agriculture project providing support for drought-proofing, water harvesting, and sustainable farming in Maharashtra"
+    max_benefit: 150000
+    benefit_type: "variable"
+    priority_weight: 1.1
+    rules_logic: "AND"
+    rules:
+      - field: "state"
+        operator: "equals"
+        value: "maharashtra"
+        id: "ndks_state"
+        description: "Must be in Maharashtra"
+      - field: "acreage"
+        operator: ">="
+        value: 0.2
+        id: "ndks_land"
+        description: "Minimum 0.2 hectare land"
+      - field: "land_type"
+        operator: "in"
+        value: ["dry", "mixed"]
+        id: "ndks_land_type"
+        description: "Dry or mixed land type preferred"
+    required_documents:
+      - "Aadhaar Card"
+      - "7/12 Extract"
+      - "8A Certificate"
+      - "Bank Passbook"
+
+  - scheme_id: "MH-GMSA-046"
+    name: "Gopinath Munde Shetkari Apghat Vima Yojana"
+    name_hi: "गोपीनाथ मुंडे शेतकरी अपघात विमा योजना"
+    name_mr: "गोपीनाथ मुंडे शेतकरी अपघात विमा योजना"
+    category: "insurance"
+    description: "Accidental death and disability insurance for farmers — ₹2 lakh for death, ₹1 lakh for permanent disability"
+    max_benefit: 200000
+    benefit_type: "fixed"
+    priority_weight: 1.0
+    rules_logic: "AND"
+    rules:
+      - field: "state"
+        operator: "equals"
+        value: "maharashtra"
+        id: "gmsa_state"
+        description: "Must be in Maharashtra"
+      - field: "farmer_type"
+        operator: "in"
+        value: ["owner", "tenant", "sharecropper"]
+        id: "gmsa_farmer"
+        description: "Any farmer type"
+    required_documents:
+      - "Aadhaar Card"
+      - "7/12 Extract"
+      - "Death/Disability Certificate"
+      - "FIR Copy (if accident)"
+
+  - scheme_id: "MH-BMKK-047"
+    name: "Birsa Munda Krushi Kranti Yojana"
+    name_hi: "बिरसा मुंडा कृषि क्रांति योजना"
+    name_mr: "बिरसा मुंडा कृषी क्रांती योजना"
+    category: "tribal_support"
+    description: "Agricultural support for tribal farmers — free seeds, tools, and training in Maharashtra tribal areas"
+    max_benefit: 50000
+    benefit_type: "variable"
+    priority_weight: 1.1
+    rules_logic: "AND"
+    rules:
+      - field: "state"
+        operator: "equals"
+        value: "maharashtra"
+        id: "bmkk_state"
+        description: "Must be in Maharashtra"
+      - field: "caste_category"
+        operator: "equals"
+        value: "st"
+        id: "bmkk_caste"
+        description: "Must be Scheduled Tribe"
+      - field: "acreage"
+        operator: ">="
+        value: 0.1
+        id: "bmkk_land"
+        description: "Minimum 0.1 hectare"
+    required_documents:
+      - "Aadhaar Card"
+      - "Caste Certificate"
+      - "7/12 Extract"
+      - "Income Certificate"
+
+  - scheme_id: "MH-MTST-048"
+    name: "Magel Tyala Shet Tale Yojana"
+    name_hi: "मागेल त्याला शेततळे योजना"
+    name_mr: "मागेल त्याला शेततळे योजना"
+    category: "irrigation"
+    description: "Farm pond scheme — 50% subsidy for creating farm ponds for water conservation in Maharashtra"
+    max_benefit: 75000
+    benefit_type: "percentage"
+    priority_weight: 1.0
+    rules_logic: "AND"
+    rules:
+      - field: "state"
+        operator: "equals"
+        value: "maharashtra"
+        id: "mtst_state"
+        description: "Must be in Maharashtra"
+      - field: "acreage"
+        operator: ">="
+        value: 0.6
+        id: "mtst_land"
+        description: "Minimum 0.6 hectare land"
+      - field: "land_type"
+        operator: "in"
+        value: ["dry", "mixed"]
+        id: "mtst_land_type"
+        description: "Dry or mixed land preferred"
+    required_documents:
+      - "Aadhaar Card"
+      - "7/12 Extract"
+      - "Gram Sabha Resolution"
+      - "Bank Passbook"
+
+  - scheme_id: "MH-JSA-049"
+    name: "Jalyukt Shivar Abhiyan 2.0"
+    name_hi: "जलयुक्त शिवार अभियान 2.0"
+    name_mr: "जलयुक्त शिवार अभियान 2.0"
+    category: "water_conservation"
+    description: "Village-level water conservation program — deepening of streams, construction of cement dams, and watershed development"
+    max_benefit: 100000
+    benefit_type: "variable"
+    priority_weight: 0.9
+    rules_logic: "AND"
+    rules:
+      - field: "state"
+        operator: "equals"
+        value: "maharashtra"
+        id: "jsa_state"
+        description: "Must be in Maharashtra"
+      - field: "acreage"
+        operator: ">="
+        value: 0.4
+        id: "jsa_land"
+        description: "Minimum 0.4 hectare land"
+    required_documents:
+      - "Aadhaar Card"
+      - "7/12 Extract"
+      - "Village Map"
+      - "Bank Passbook"
+
+  - scheme_id: "MH-VNSS-050"
+    name: "Vasantrao Naik Sheti Swavlamban Mission"
+    name_hi: "वसंतराव नाईक शेती स्वावलंबन मिशन"
+    name_mr: "वसंतराव नाईक शेती स्वावलंबन अभियान"
+    category: "farmer_welfare"
+    description: "Comprehensive farmer welfare mission — training, crop demonstrations, and market linkages for sustainable farming"
+    max_benefit: 25000
+    benefit_type: "variable"
+    priority_weight: 0.8
+    rules_logic: "AND"
+    rules:
+      - field: "state"
+        operator: "equals"
+        value: "maharashtra"
+        id: "vnss_state"
+        description: "Must be in Maharashtra"
+      - field: "farmer_type"
+        operator: "in"
+        value: ["owner", "tenant"]
+        id: "vnss_farmer"
+        description: "Must be owner or tenant farmer"
+    required_documents:
+      - "Aadhaar Card"
+      - "7/12 Extract"
+      - "Bank Passbook"
+
+  - scheme_id: "MH-BAKS-051"
+    name: "Dr. Babasaheb Ambedkar Krushi Swavlamban Yojana"
+    name_hi: "डॉ. बाबासाहेब अंबेडकर कृषि स्वावलंबन योजना"
+    name_mr: "डॉ. बाबासाहेब आंबेडकर कृषी स्वावलंबन योजना"
+    category: "irrigation"
+    description: "Irrigation support for SC/NB farmers —wells, pipelines, drip/sprinkler sets with up to 90% subsidy"
+    max_benefit: 250000
+    benefit_type: "percentage"
+    priority_weight: 1.2
+    rules_logic: "AND"
+    rules:
+      - field: "state"
+        operator: "equals"
+        value: "maharashtra"
+        id: "baks_state"
+        description: "Must be in Maharashtra"
+      - field: "caste_category"
+        operator: "in"
+        value: ["sc", "nt", "vjnt"]
+        id: "baks_caste"
+        description: "Must be SC, NT, or VJNT category"
+      - field: "acreage"
+        operator: "<="
+        value: 6
+        id: "baks_land"
+        description: "Maximum 6 hectare land"
+    required_documents:
+      - "Aadhaar Card"
+      - "Caste Certificate"
+      - "7/12 Extract"
+      - "Income Certificate"
+      - "Bank Passbook"
+
+  - scheme_id: "MH-BFFL-052"
+    name: "Bhausaheb Fundkar Falbag Lagwad Yojana"
+    name_hi: "भाऊसाहब फुंडकर फलबाग लागवड योजना"
+    name_mr: "भाऊसाहेब फुंडकर फळबाग लागवड योजना"
+    category: "horticulture"
+    description: "Horticulture plantation scheme — subsidy for fruit orchards (mango, pomegranate, orange, grapes, cashew)"
+    max_benefit: 100000
+    benefit_type: "per_hectare"
+    benefit_per_hectare: 50000
+    priority_weight: 1.0
+    rules_logic: "AND"
+    rules:
+      - field: "state"
+        operator: "equals"
+        value: "maharashtra"
+        id: "bffl_state"
+        description: "Must be in Maharashtra"
+      - field: "acreage"
+        operator: ">="
+        value: 0.2
+        id: "bffl_land"
+        description: "Minimum 0.2 hectare for plantation"
+      - field: "irrigation_available"
+        operator: "equals"
+        value: true
+        id: "bffl_irrigation"
+        description: "Irrigation facility required for orchards"
+    required_documents:
+      - "Aadhaar Card"
+      - "7/12 Extract"
+      - "Irrigation Proof"
+      - "Bank Passbook"
+
+  - scheme_id: "MH-MSKP-053"
+    name: "Mukhyamantri Solar Krushi Pump Yojana"
+    name_hi: "मुख्यमंत्री सोलर कृषि पंप योजना"
+    name_mr: "मुख्यमंत्री सौर कृषी पंप योजना"
+    category: "solar_energy"
+    description: "Solar agricultural water pumps with 90% subsidy for farmers to replace electric/diesel pumps"
+    max_benefit: 300000
+    benefit_type: "percentage"
+    priority_weight: 1.2
+    rules_logic: "AND"
+    rules:
+      - field: "state"
+        operator: "equals"
+        value: "maharashtra"
+        id: "mskp_state"
+        description: "Must be in Maharashtra"
+      - field: "acreage"
+        operator: ">="
+        value: 0.5
+        id: "mskp_land"
+        description: "Minimum 0.5 hectare land"
+      - field: "water_source"
+        operator: "in"
+        value: ["well", "borewell", "river", "canal"]
+        id: "mskp_water"
+        description: "Must have water source (well/borewell/river/canal)"
+    required_documents:
+      - "Aadhaar Card"
+      - "7/12 Extract"
+      - "Electricity Bill (if replacing)"
+      - "Bank Passbook"
+      - "Water Source Certificate"
+
