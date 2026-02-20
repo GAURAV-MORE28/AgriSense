@@ -1,0 +1,123 @@
+{
+  "app": {
+    "name": "KRISHI-AI",
+    "tagline": "Government Schemes for Farmers"
+  },
+  "nav": {
+    "home": "Home",
+    "profile": "My Profile",
+    "schemes": "Schemes",
+    "documents": "Documents",
+    "help": "Help",
+    "language": "Language"
+  },
+  "landing": {
+    "welcome": "Welcome to KRISHI-AI",
+    "subtitle": "Find government schemes you're eligible for",
+    "getStarted": "Get Started",
+    "features": {
+      "voice": "Voice Assistance",
+      "voiceDesc": "Speak in your language",
+      "offline": "Works Offline",
+      "offlineDesc": "No internet needed",
+      "secure": "Secure & Private",
+      "secureDesc": "Your data is safe"
+    }
+  },
+  "profile": {
+    "title": "Create Your Profile",
+    "step1": "Personal Info",
+    "step2": "Farm Details",
+    "step3": "Family & Income",
+    "name": "Full Name",
+    "mobile": "Mobile Number",
+    "state": "State",
+    "district": "District",
+    "village": "Village (Optional)",
+    "landType": "Land Type",
+    "irrigated": "Irrigated",
+    "dry": "Dry/Rainfed",
+    "mixed": "Mixed",
+    "acreage": "Land Area (Hectares)",
+    "crops": "Main Crops",
+    "familyCount": "Family Members",
+    "annualIncome": "Annual Income (₹)",
+    "farmerType": "Farmer Type",
+    "owner": "Land Owner",
+    "tenant": "Tenant",
+    "sharecropper": "Sharecropper",
+    "next": "Next",
+    "back": "Back",
+    "submit": "Find Schemes",
+    "speakButton": "Speak",
+    "listening": "Listening...",
+    "privacyNote": "Your information is private and secure"
+  },
+  "schemes": {
+    "title": "Recommended Schemes",
+    "found": "schemes found for you",
+    "score": "Match Score",
+    "benefit": "Estimated Benefit",
+    "eligible": "Eligible",
+    "partiallyEligible": "Partially Eligible",
+    "notEligible": "Not Eligible",
+    "whyThis": "Why this scheme?",
+    "apply": "Apply Now",
+    "viewDetails": "View Details",
+    "missingDocs": "Missing Documents",
+    "matchedRules": "You qualify because",
+    "failingRules": "You need"
+  },
+  "documents": {
+    "title": "Upload Documents",
+    "upload": "Upload Document",
+    "camera": "Take Photo",
+    "file": "Choose File",
+    "processing": "Processing...",
+    "extractedFields": "Extracted Information",
+    "edit": "Edit",
+    "confirm": "Confirm",
+    "docTypes": {
+      "aadhaar": "Aadhaar Card",
+      "landRecord": "Land Record",
+      "income": "Income Certificate",
+      "bank": "Bank Passbook"
+    }
+  },
+  "application": {
+    "title": "Application Form",
+    "review": "Review & Submit",
+    "submitting": "Submitting...",
+    "success": "Application Submitted!",
+    "trackStatus": "Track Status",
+    "applicationId": "Application ID"
+  },
+  "status": {
+    "title": "Application Status",
+    "timeline": "Status Timeline",
+    "received": "Received",
+    "underReview": "Under Review",
+    "approved": "Approved",
+    "rejected": "Rejected"
+  },
+  "offline": {
+    "banner": "You are offline",
+    "bannerDesc": "Your changes will sync when connected",
+    "queued": "queued items"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "retry": "Try Again",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "accessibility": {
+    "highContrast": "High Contrast",
+    "voiceNav": "Voice Navigation",
+    "skipToMain": "Skip to main content"
+  }
+}
