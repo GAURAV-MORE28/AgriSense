@@ -28,7 +28,11 @@ class Settings(BaseSettings):
     schemes_data_path: str = "data/schemes.yaml"
     
     # Model paths
+    # Model paths
     ranking_model_path: str = "models/ranking_model.pkl"
+    
+    # Database
+    database_url: str = "postgresql://krishi:krishi123@postgres:5432/krishidb"
     
     class Config:
         env_file = ".env"

@@ -14,7 +14,6 @@ root.render(
   </React.StrictMode>
 );
 
-// Unregister service worker (missing file causes errors)
 // Register service worker for PWA
 serviceWorkerRegistration.register({
   onUpdate: (registration) => {

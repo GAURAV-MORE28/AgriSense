@@ -68,6 +68,7 @@ services:
       - PYTHONUNBUFFERED=1
       - LLM_ENABLED=false
       - LLM_MOCK=true
+      - DATABASE_URL=postgresql://krishi:krishi123@postgres:5432/krishidb
     volumes:
       - ./ml-service/data:/app/data
       - ./uploads:/app/uploads

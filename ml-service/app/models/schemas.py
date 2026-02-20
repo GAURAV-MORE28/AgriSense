@@ -35,6 +35,16 @@ class FarmerProfile(BaseModel):
     family_count: int = Field(..., ge=1)
     annual_income: float = Field(..., ge=0)
     farmer_type: FarmerType
+    education_level: Optional[str] = "none"
+    irrigation_available: Optional[bool] = False
+    loan_status: Optional[str] = "none"
+    bank_account_linked: Optional[bool] = False
+    aadhaar_linked: Optional[bool] = False
+    caste_category: Optional[str] = "general"
+    livestock: List[str] = []
+    soil_type: Optional[str] = "unknown"
+    water_source: Optional[str] = "rainfed"
+    machinery_owned: List[str] = []
     
     class Config:
         json_schema_extra = {
@@ -64,9 +74,38 @@ class DocumentFields(BaseModel):
     geo_hints: Optional[str] = None
 
 
+class RuleDefinition(BaseModel):
+    """Definition of a single eligibility rule."""
+    field: str
+    operator: str
+    value: Any
+    id: Optional[str] = None
+    description: Optional[str] = None
+
+
+class SchemeDefinition(BaseModel):
+    """Definition of a scheme with matching rules."""
+    scheme_id: str
+    name: str
+    name_hi: Optional[str] = None
+    name_mr: Optional[str] = None
+    category: str
+    description: str
+    max_benefit: float
+    benefit_type: str = "fixed"  # "fixed", "per_hectare", "percentage"
+    benefit_per_hectare: Optional[float] = None
+    benefit_percentage: Optional[float] = None
+    base_amount: Optional[float] = None
+    priority_weight: float = 1.0
+    rules_logic: str = "AND"
+    rules: List[RuleDefinition] = []
+    required_documents: List[str] = []
+
+
 class SchemeMatchRequest(BaseModel):
     """Request for scheme matching."""
     profile: FarmerProfile
+    schemes: Optional[List[SchemeDefinition]] = None  # Optional dynamic schemes
     documents: Optional[List[DocumentFields]] = None
     top_k: int = Field(default=10, ge=1, le=50)
 
@@ -99,6 +138,9 @@ class SchemeRecommendation(BaseModel):
     textual_explanation_mr: Optional[str] = None
     expected_documents: List[str]
     eligibility_status: str  # "eligible", "partially_eligible", "ineligible"
+    eligibility_percentage: float = Field(..., ge=0, le=100)
+    success_probability: float = Field(default=0.0, ge=0, le=1)
+    confidence_score: float = Field(default=0.0, ge=0, le=1)
 
 
 class SchemeMatchResponse(BaseModel):

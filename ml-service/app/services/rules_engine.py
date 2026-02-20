@@ -4,9 +4,13 @@ Rules Engine for deterministic scheme eligibility matching.
 
 import yaml
 import os
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict, Any, Tuple, Optional
 from app.models.schemas import FarmerProfile, RuleMatch
 import logging
+import psycopg2
+from psycopg2.extras import RealDictCursor
+from app.core.config import settings
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -28,17 +32,54 @@ class RulesEngine:
         "not_in": lambda a, b: a not in b if isinstance(b, list) else str(a).lower() not in str(b).lower(),
         "contains": lambda a, b: any(str(b).lower() in str(x).lower() for x in a) if isinstance(a, list) else str(b).lower() in str(a).lower(),
         "any_in": lambda a, b: any(x in b for x in a) if isinstance(a, list) else a in b,
+        "equals": lambda a, b: str(a).lower() == str(b).lower(), # Add equals as alias and case-insensitive
     }
     
-    def __init__(self, schemes_path: str = None):
+    def __init__(self, schemes_path: Optional[str] = None):
         """Initialize the rules engine with scheme definitions."""
-        self.schemes_path = schemes_path or os.path.join(
-            os.path.dirname(__file__), "..", "..", "data", "schemes.yaml"
-        )
-        self.schemes = self._load_schemes()
-        logger.info(f"Loaded {len(self.schemes)} schemes from {self.schemes_path}")
+        self.schemes_path = schemes_path or settings.schemes_data_path
+        self.schemes = self.reload_schemes()
     
-    def _load_schemes(self) -> List[Dict]:
+    def reload_schemes(self) -> List[Dict]:
+        """Reload schemes from DB (primary) or YAML (fallback)."""
+        schemes = self._load_schemes_from_db()
+        if not schemes:
+            logger.warning("Falling back to YAML for schemes")
+            schemes = self._load_schemes_from_yaml()
+        
+        self.schemes = schemes
+        logger.info(f"Loaded {len(self.schemes)} schemes into RulesEngine")
+        return schemes
+    
+    def _load_schemes_from_db(self) -> List[Dict]:
+        """Load scheme definitions from PostgreSQL."""
+        try:
+            conn = psycopg2.connect(settings.database_url)
+            cur = conn.cursor(cursor_factory=RealDictCursor)
+            cur.execute("SELECT * FROM schemes WHERE is_active = TRUE")
+            rows = cur.fetchall()
+            
+            schemes = []
+            for row in rows:
+                scheme = dict(row)
+                # Convert eligibility_rules from JSONB to list of dicts if needed
+                if isinstance(scheme.get('eligibility_rules'), str):
+                    scheme['rules'] = json.loads(scheme['eligibility_rules'])
+                else:
+                    scheme['rules'] = scheme['eligibility_rules']
+                
+                # Ensure compatibility with existing logic
+                scheme['max_benefit'] = float(scheme.get('benefit_estimate') or 0)
+                schemes.append(scheme)
+            
+            cur.close()
+            conn.close()
+            return schemes
+        except Exception as e:
+            logger.error(f"Error loading schemes from DB: {e}")
+            return []
+
+    def _load_schemes_from_yaml(self) -> List[Dict]:
         """Load scheme definitions from YAML file."""
         try:
             with open(self.schemes_path, 'r', encoding='utf-8') as f:
@@ -66,6 +107,16 @@ class RulesEngine:
             "farmer_type": profile.farmer_type.value,
             "crops": profile.main_crops,
             "main_crops": profile.main_crops,
+            "education_level": profile.education_level.lower() if profile.education_level else "none",
+            "irrigation_available": profile.irrigation_available,
+            "loan_status": profile.loan_status.lower() if profile.loan_status else "none",
+            "bank_account_linked": profile.bank_account_linked,
+            "aadhaar_linked": profile.aadhaar_linked,
+            "caste_category": profile.caste_category.lower() if profile.caste_category else "general",
+            "livestock": profile.livestock,
+            "soil_type": profile.soil_type.lower() if profile.soil_type else "unknown",
+            "water_source": profile.water_source.lower() if profile.water_source else "rainfed",
+            "machinery_owned": profile.machinery_owned,
         }
         return field_mapping.get(field.lower())
     
@@ -188,15 +239,17 @@ class RulesEngine:
     
     def find_eligible_schemes(
         self, 
-        profile: FarmerProfile
+        profile: FarmerProfile,
+        schemes: Optional[List[Dict[str, Any]]] = None
     ) -> List[Dict[str, Any]]:
         """
         Find all schemes the profile is eligible for.
         Returns list of dicts with scheme info and rule evaluation results.
         """
         results = []
+        schemes_to_eval = schemes if schemes is not None else self.schemes
         
-        for scheme in self.schemes:
+        for scheme in schemes_to_eval:
             is_eligible, matched, failing, confidence = self.evaluate_scheme(scheme, profile)
             
             results.append({

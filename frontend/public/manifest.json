@@ -24,6 +24,7 @@
   "theme_color": "#16a34a",
   "background_color": "#ffffff",
   "orientation": "portrait-primary",
+<<<<<<< HEAD
   "categories": [
     "government",
     "agriculture",
@@ -31,3 +32,8 @@
   ],
   "lang": "en-IN"
 }
+=======
+  "categories": ["government", "agriculture", "productivity"],
+  "lang": "en-IN"
+}
+>>>>>>> f00a66f0fc28ee1666e2d7573bc8ca1e3b8da83f

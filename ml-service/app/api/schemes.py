@@ -58,7 +58,9 @@ async def match_schemes(
         profile_id = request.profile.profile_id or str(uuid.uuid4())
         
         # Evaluate all schemes against the profile
-        eligible_results = rules_engine.find_eligible_schemes(request.profile)
+        # Use provided schemes if available, otherwise fallback to engine defaults
+        dynamic_schemes = [s.dict() for s in request.schemes] if request.schemes else None
+        eligible_results = rules_engine.find_eligible_schemes(request.profile, dynamic_schemes)
         
         # Rank and get top recommendations
         recommendations = ranking_engine.rank_schemes(
@@ -124,3 +126,60 @@ async def get_scheme(
     if not scheme:
         raise HTTPException(status_code=404, detail="Scheme not found")
     return scheme
+
+
+@router.post("/schemes/debug")
+async def debug_match(
+    request: SchemeMatchRequest,
+    rules_engine: RulesEngine = Depends(get_rules_engine),
+    ranking_engine: RankingEngine = Depends(get_ranking_engine)
+):
+    """
+    Debug matching logic for a specific profile.
+    Returns full trace of all rule evaluations.
+    """
+    try:
+        dynamic_schemes = [s.dict() for s in request.schemes] if request.schemes else None
+        
+        # 1. Rules Evaluation Trace
+        results = []
+        schemes_to_eval = dynamic_schemes if dynamic_schemes else rules_engine.schemes
+        
+        for scheme in schemes_to_eval:
+            is_eligible, matched, failing, confidence = rules_engine.evaluate_scheme(scheme, request.profile)
+            
+            # 2. Eligibility Engine Trace
+            doc_names = [d.field_name for d in request.documents] if request.documents else None
+            e_result = ranking_engine.eligibility_engine.calculate_score(
+                scheme, request.profile, matched, failing, doc_names
+            )
+            
+            # 3. Hybrid ML Trace
+            success_prob = ranking_engine.hybrid_model.predict_probability(request.profile, scheme)
+            
+            results.append({
+                "scheme_id": scheme.get('scheme_id'),
+                "name": scheme.get('name'),
+                "rules_eval": {
+                    "is_eligible": is_eligible,
+                    "confidence": confidence,
+                    "matched_count": len(matched),
+                    "failed_count": len(failing),
+                    "details": {
+                        "matched": [r.dict() for r in matched],
+                        "failing": [r.dict() for r in failing]
+                    }
+                },
+                "scoring_eval": e_result,
+                "ml_eval": {
+                    "success_probability": success_prob
+                }
+            })
+            
+        return {
+            "profile": request.profile.dict(),
+            "evaluation_trace": results
+        }
+    except Exception as e:
+        logger.error(f"Debug match failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))

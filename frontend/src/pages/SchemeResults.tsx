@@ -24,6 +24,7 @@ interface Scheme {
   matched_rules: Array<{ description: string }>;
   failing_rules: Array<{ description: string }>;
   expected_documents: string[];
+  eligibility_percentage: number;
 }
 
 interface MatchResponse {
@@ -204,7 +205,8 @@ function getDemoSchemes(): Scheme[] {
       textual_explanation_mr: 'तुम्ही पीएम-किसान साठी पूर्णपणे पात्र आहात.',
       matched_rules: [{ description: 'Land holding ≤ 2 hectares' }, { description: 'Owner or tenant farmer' }],
       failing_rules: [],
-      expected_documents: ['Aadhaar Card', 'Land Records', 'Bank Passbook']
+      expected_documents: ['Aadhaar Card', 'Land Records', 'Bank Passbook'],
+      eligibility_percentage: 100
     },
     {
       scheme_id: 'PMFBY-003',
@@ -215,7 +217,8 @@ function getDemoSchemes(): Scheme[] {
       textual_explanation: 'You are eligible for crop insurance coverage based on your crops and land.',
       matched_rules: [{ description: 'Has cultivable land' }, { description: 'Grows notified crops' }],
       failing_rules: [],
-      expected_documents: ['Aadhaar Card', 'Land Records', 'Sowing Certificate']
+      expected_documents: ['Aadhaar Card', 'Land Records', 'Sowing Certificate'],
+      eligibility_percentage: 100
     },
     {
       scheme_id: 'KCC-004',
@@ -226,7 +229,8 @@ function getDemoSchemes(): Scheme[] {
       textual_explanation: 'You can get credit at subsidized interest rates for farm operations.',
       matched_rules: [{ description: 'Owner or tenant farmer' }],
       failing_rules: [],
-      expected_documents: ['Aadhaar Card', 'Land Records', 'Bank Account']
+      expected_documents: ['Aadhaar Card', 'Land Records', 'Bank Account'],
+      eligibility_percentage: 50
     }
   ];
 }

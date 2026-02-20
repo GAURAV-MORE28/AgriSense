@@ -17,6 +17,8 @@ interface Scheme {
   failing_rules: Array<{ description: string }>;
   why?: string[];
   expected_documents: string[];
+  eligibility_percentage: number;
+  success_probability?: number;
 }
 
 interface SchemeCardProps {
@@ -54,10 +56,34 @@ const SchemeCard: React.FC<SchemeCardProps> = ({
   };
 
   const getScoreBadge = () => {
-    const scoreClass = scheme.score >= 80 ? 'high' : scheme.score >= 50 ? 'medium' : 'low';
+    const scoreClass = scheme.eligibility_percentage >= 70 ? 'high' : scheme.eligibility_percentage >= 40 ? 'medium' : 'low';
     return (
       <span className={`score-badge ${scoreClass}`}>
-        {scheme.score}%
+        {scheme.eligibility_percentage}% Match
+      </span>
+    );
+  };
+
+  const getRankBadge = () => {
+    if (!rank) return null;
+
+    let badgeText = `#${rank}`;
+    let badgeClass = "bg-primary-100 text-primary-700";
+
+    if (rank === 1) {
+      badgeText = "🥇 Best Match";
+      badgeClass = "bg-yellow-100 text-yellow-800 border border-yellow-200";
+    } else if (rank === 2) {
+      badgeText = "🥈 Top Recommendation";
+      badgeClass = "bg-gray-100 text-gray-800 border border-gray-200";
+    } else if (rank === 3) {
+      badgeText = "🥉 Highly Relevant";
+      badgeClass = "bg-orange-100 text-orange-800 border border-orange-200";
+    }
+
+    return (
+      <span className={`px-2 py-0.5 rounded-md text-xs font-bold uppercase tracking-wider ${badgeClass}`}>
+        {badgeText}
       </span>
     );
   };
@@ -67,14 +93,10 @@ const SchemeCard: React.FC<SchemeCardProps> = ({
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
-            {rank && (
-              <span className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-sm font-bold text-primary-700">
-                #{rank}
-              </span>
-            )}
             <h3 className="text-lg font-semibold text-gray-900">
               {localizedName}
             </h3>
+            {getRankBadge()}
           </div>
 
           <div className="flex items-center gap-3 mb-3">
@@ -84,14 +106,20 @@ const SchemeCard: React.FC<SchemeCardProps> = ({
 
           {/* Score Progress Bar */}
           <div className="mb-3">
-            <div className="w-full bg-gray-100 rounded-full h-2">
+            <div className="flex justify-between items-center text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">
+              <span>Eligibility Confidence</span>
+              <span>{scheme.eligibility_percentage}%</span>
+            </div>
+            <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden border border-gray-200 shadow-inner">
               <div
-                className="h-2 rounded-full transition-all duration-700 ease-out"
+                className="h-full rounded-full transition-all duration-1000 ease-out relative"
                 style={{
-                  width: `${scheme.score}%`,
-                  backgroundColor: scheme.score >= 80 ? '#10B981' : scheme.score >= 50 ? '#F59E0B' : '#EF4444'
+                  width: `${scheme.eligibility_percentage}%`,
+                  backgroundColor: scheme.eligibility_percentage >= 70 ? '#10B981' : scheme.eligibility_percentage >= 40 ? '#F59E0B' : '#EF4444'
                 }}
-              />
+              >
+                <div className="absolute inset-0 bg-white/20 animate-pulse" />
+              </div>
             </div>
           </div>
 
@@ -101,7 +129,7 @@ const SchemeCard: React.FC<SchemeCardProps> = ({
             <span className="text-gray-500">
               {t('schemes.benefit')}:
               <span className="font-semibold text-green-600 ml-1">
-                ₹{scheme.benefit_estimate.toLocaleString('en-IN')}
+                ₹{(scheme.benefit_estimate || 0).toLocaleString('en-IN')}
               </span>
             </span>
           </div>
@@ -142,7 +170,7 @@ const SchemeCard: React.FC<SchemeCardProps> = ({
             </div>
           )}
           {/* Matched Rules */}
-          {scheme.matched_rules.length > 0 && (
+          {scheme.matched_rules?.length > 0 && (
             <div>
               <h4 className="text-sm font-medium text-gray-700 mb-2">
                 ✅ {t('schemes.matchedRules')}:
@@ -159,7 +187,7 @@ const SchemeCard: React.FC<SchemeCardProps> = ({
           )}
 
           {/* Failing Rules */}
-          {scheme.failing_rules.length > 0 && (
+          {scheme.failing_rules?.length > 0 && (
             <div>
               <h4 className="text-sm font-medium text-gray-700 mb-2">
                 ⚠️ {t('schemes.failingRules')}:

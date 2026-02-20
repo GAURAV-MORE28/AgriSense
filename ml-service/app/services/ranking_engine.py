@@ -7,6 +7,9 @@ from typing import List, Dict, Any
 from app.models.schemas import (
     FarmerProfile, SchemeRecommendation, RuleMatch, DocumentFields
 )
+from app.services.eligibility_engine import EligibilityScoringEngine
+from app.services.hybrid_model import HybridModel
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -19,37 +22,51 @@ class RankingEngine:
     
     def __init__(self, model_path: str = None):
         """Initialize the ranking engine."""
-        self.model = None
         self.model_path = model_path
-        # For prototype, we use heuristic scoring
-        # In production, load a trained LightGBM/sklearn model
-        logger.info("Ranking engine initialized (heuristic mode)")
+        self.eligibility_engine = EligibilityScoringEngine()
+        self.hybrid_model = HybridModel(model_path)
+        logger.info("Ranking engine initialized with HybridModel")
     
-    def _calculate_benefit_score(
+    def _calculate_rank_score(
         self, 
+        eligibility_score: float,
         scheme: Dict, 
         profile: FarmerProfile,
-        confidence: float,
-        is_eligible: bool
+        doc_readiness: float,
+        success_prob: float = 0.85
     ) -> float:
         """
-        Calculate score using: score = eligibility_score * benefit_weight * profile_match
+        Ranking Score =
+        0.35 * eligibility_score
+        0.25 * estimated_benefit_weight
+        0.15 * priority_scheme_weight
+        0.10 * document_readiness
+        0.10 * success_probability
+        0.05 * recency_weight
         """
-        # eligibility_score: 0-1 based on rule match
-        eligibility_score = confidence if is_eligible else max(0.2, confidence * 0.5)
-
-        # benefit_weight: normalized by scheme benefit (0-1 scale)
-        max_benefit = scheme.get('max_benefit', 10000)
-        priority_weight = scheme.get('priority_weight', 1.0)
-        benefit_weight = min((max_benefit / 500000) * priority_weight, 1.0)
-
-        # profile_match: how well profile fits (acreage, income, etc.)
-        acreage_factor = min(profile.acreage / 5.0, 1.0)
-        income_factor = 1.0 - min(profile.annual_income / 500000, 0.8)
-        profile_match = 0.5 + 0.25 * acreage_factor + 0.25 * income_factor
-
-        score = eligibility_score * benefit_weight * profile_match * 100
-        return min(max(round(score, 2), 0), 100)
+        # 1. Eligibility (0.35)
+        s1 = 0.35 * eligibility_score
+        
+        # 2. Benefit Weight (0.25)
+        benefit = self._estimate_benefit(scheme, profile)
+        benefit_weight = min((benefit / 50000) * 100, 100)
+        s2 = 0.25 * benefit_weight
+        
+        # 3. Priority Weight (0.15)
+        priority = float(scheme.get('priority_weight', 1.0)) * 100
+        s3 = 0.15 * min(priority, 100)
+        
+        # 4. Document Readiness (0.10)
+        s4 = 0.10 * (doc_readiness * 100)
+        
+        # 5. Success Probability (0.10)
+        s5 = 0.10 * (success_prob * 100)
+        
+        # 6. Recency Weight (0.05) - Default 1.0 for now
+        s6 = 0.05 * 100
+        
+        total_score = s1 + s2 + s3 + s4 + s5 + s6
+        return min(max(round(total_score, 2), 0), 100)
     
     def _estimate_benefit(self, scheme: Dict, profile: FarmerProfile) -> float:
         """Estimate the monetary benefit for this profile."""
@@ -163,13 +180,26 @@ class RankingEngine:
         
         for result in eligible_results:
             scheme = result['scheme']
-            is_eligible = result['is_eligible']
             matched_rules = result['matched_rules']
             failing_rules = result['failing_rules']
-            confidence = result['confidence']
             
-            # Calculate scores: eligibility_score * benefit_weight * profile_match
-            score = self._calculate_benefit_score(scheme, profile, confidence, is_eligible)
+            # Use the new Eligibility Scoring Engine
+            doc_names = [d.field_name for d in documents] if documents else None
+            e_result = self.eligibility_engine.calculate_score(
+                scheme, profile, matched_rules, failing_rules, doc_names
+            )
+            
+            eligibility_score = e_result['eligibility_score']
+            doc_readiness = e_result['category_scores'].get('documents', 0.5)
+            
+            # Predict success probability using Hybrid ML Model
+            success_prob = self.hybrid_model.predict_probability(profile, scheme)
+            
+            # Calculate final multi-factor rank score
+            rank_score = self._calculate_rank_score(
+                eligibility_score, scheme, profile, doc_readiness, success_prob
+            )
+            
             benefit = self._estimate_benefit(scheme, profile)
             
             # Generate explanations
@@ -184,9 +214,9 @@ class RankingEngine:
                 name=scheme.get('name', ''),
                 name_hi=scheme.get('name_hi'),
                 name_mr=scheme.get('name_mr'),
-                score=round(score, 2),
+                score=rank_score,
                 benefit_estimate=benefit,
-                confidence=self._get_confidence_level(confidence),
+                confidence=self._get_confidence_level(eligibility_score / 100),
                 matched_rules=matched_rules,
                 failing_rules=failing_rules,
                 why=why_array,
@@ -194,7 +224,10 @@ class RankingEngine:
                 textual_explanation_hi=explanations['hi'],
                 textual_explanation_mr=explanations['mr'],
                 expected_documents=scheme.get('required_documents', []),
-                eligibility_status=self._get_eligibility_status(is_eligible, confidence)
+                eligibility_status=e_result['eligibility_status'],
+                eligibility_percentage=eligibility_score,
+                success_probability=success_prob,
+                confidence_score=eligibility_score / 100.0
             )
             recommendations.append(recommendation)
         

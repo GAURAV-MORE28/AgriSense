@@ -112,7 +112,31 @@ CREATE TABLE IF NOT EXISTS chat_history (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Schemes table
+CREATE TABLE IF NOT EXISTS schemes (
+    scheme_id VARCHAR(50) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    name_hi VARCHAR(255),
+    name_mr VARCHAR(255),
+    description TEXT,
+    description_hi TEXT,
+    description_mr TEXT,
+    benefit_estimate DECIMAL(12, 2),
+    benefit_type VARCHAR(50), -- "subsidy", "loan", "direct_transfer", "insurance"
+    eligibility_rules JSONB NOT NULL,
+    required_documents TEXT[] DEFAULT '{}',
+    category VARCHAR(100),
+    department VARCHAR(255),
+    state VARCHAR(100), -- NULL for central schemes
+    is_active BOOLEAN DEFAULT TRUE,
+    priority_weight DECIMAL(3, 2) DEFAULT 1.0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Indexes
+CREATE INDEX IF NOT EXISTS idx_schemes_state ON schemes(state);
+CREATE INDEX IF NOT EXISTS idx_schemes_active ON schemes(is_active);
 CREATE INDEX idx_profiles_user_id ON farmer_profiles(user_id);
 CREATE INDEX idx_applications_user_id ON applications(user_id);
 CREATE INDEX idx_applications_status ON applications(status);
